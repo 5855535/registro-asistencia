@@ -13,7 +13,6 @@ import {
   collection,
   addDoc,
   query,
-  where,
   orderBy,
   onSnapshot,
   serverTimestamp,
@@ -169,9 +168,7 @@ const Icon = ({ name, size = 20, color = "currentColor" }) => {
         <line x1="8" y1="6" x2="21" y2="6" />
         <line x1="8" y1="12" x2="21" y2="12" />
         <line x1="8" y1="18" x2="21" y2="18" />
-        <line x1="3" y1="6" x2="3.01" y2="6" />
-        <line x1="3" y1="12" x2="3.01" y2="12" />
-        <line x1="3" y1="18" x2="3.01" y2="18" />
+        <path d="M3 6h.01M3 12h.01M3 18h.01" />
       </>
     ),
     bar: (
@@ -1083,28 +1080,23 @@ const RecordsList = ({ records, loading, filter, onFilter }) => {
 const StatsDashboard = ({ records }) => {
   const hoyLocale = todayStr();
   const hoy = records.filter((r) => r.fecha === hoyLocale);
-  const byUser = {};
-  hoy.forEach((r) => {
-    const nameKey = r.nombre || r.usuario;
-    byUser[nameKey] = (byUser[nameKey] || 0) + 1;
-  });
 
   const stats = [
     { label: "Total hoy", value: hoy.length, icon: "list", color: T.green600 },
     {
-      label: "Usuarios",
-      value: Object.keys(byUser).length,
+      label: "Mi cuenta",
+      value: 1,
       icon: "user",
       color: T.blue600,
     },
     {
-      label: "Entradas",
+      label: "Mis Entradas",
       value: hoy.filter((r) => r.tipo === "Entrada").length,
       icon: "login",
       color: T.green500,
     },
     {
-      label: "Salidas",
+      label: "Mis Salidas",
       value: hoy.filter((r) => r.tipo === "Salida").length,
       icon: "logout",
       color: T.coral600,
@@ -1112,7 +1104,7 @@ const StatsDashboard = ({ records }) => {
   ];
   return (
     <div style={{ padding: "1.25rem" }}>
-      <SectionLabel text="Resumen del día" />
+      <SectionLabel text="Mi resumen del día" />
       <div
         style={{
           display: "grid",
@@ -1348,7 +1340,9 @@ export default function App() {
     if (!user || records.length === 0) return;
 
     const userRecords = records.filter(
-      (r) => (r.nombre || r.usuario) === user.displayName,
+      (r) =>
+        (r.nombre || r.usuario) === user.displayName ||
+        r.usuario === user.email,
     );
     if (userRecords.length < 3) return;
 
@@ -1376,7 +1370,8 @@ export default function App() {
       records.some(
         (r) =>
           r.fecha === hoyStrLocal &&
-          (r.nombre || r.usuario) === user.displayName &&
+          ((r.nombre || r.usuario) === user.displayName ||
+            r.usuario === user.email) &&
           r.tipo === tipo,
       );
 
@@ -1463,8 +1458,10 @@ export default function App() {
     );
   }
 
+  // Filtramos todas las asistencias para que tanto el Historial como el Resumen solo utilicen los datos del usuario logueado
   const userRecords = records.filter(
-    (r) => (r.nombre || r.usuario) === user.displayName,
+    (r) =>
+      (r.nombre || r.usuario) === user.displayName || r.usuario === user.email,
   );
   const lastStatus = userRecords[0]?.tipo || "Sin registro";
 
@@ -1511,13 +1508,13 @@ export default function App() {
           )}
           {tab === "historial" && (
             <RecordsList
-              records={records}
+              records={userRecords}
               loading={recordsLoading}
               filter={filter}
               onFilter={setFilter}
             />
           )}
-          {tab === "stats" && <StatsDashboard records={records} />}
+          {tab === "stats" && <StatsDashboard records={userRecords} />}
         </main>
 
         <BottomNav tab={tab} onTab={setTab} />
