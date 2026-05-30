@@ -4,10 +4,9 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
-  signOut,
+  signInWithPopup,
   onAuthStateChanged,
+  signOut,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -1175,154 +1174,147 @@ const BottomNav = ({ tab, onTab }) => (
       bottom: 0,
       left: 0,
       right: 0,
+      height: 64,
       background: T.white,
       borderTop: `1px solid ${T.gray200}`,
       display: "flex",
-      zIndex: 100,
+      zIndex: 9000,
     }}
   >
-    {TABS.map((t) => (
-      <button
-        key={t.id}
-        onClick={() => onTab(t.id)}
-        style={{
-          flex: 1,
-          padding: "10px 8px 12px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 3,
-          background: "none",
-          border: "none",
-          color: tab === t.id ? T.green600 : T.gray400,
-        }}
-      >
-        <Icon
-          name={t.icon}
-          size={20}
-          color={tab === t.id ? T.green600 : T.gray400}
-        />
-        <span style={{ fontSize: 10, fontWeight: tab === t.id ? 600 : 400 }}>
-          {t.label}
-        </span>
-      </button>
-    ))}
-  </nav>
-);
-
-const SideNav = ({ tab, onTab, onLogout, user }) => (
-  <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-    <div style={{ padding: "1.25rem", borderBottom: `1px solid ${T.gray200}` }}>
-      <CustomLogo />
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginTop: 16,
-        }}
-      >
-        <Avatar photoURL={user.photoURL} name={user.displayName} size={40} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: T.gray800 }}>
-            {user.displayName}
-          </div>
-          <div style={{ fontSize: 11, color: T.gray400 }}>{user.email}</div>
-        </div>
-      </div>
-    </div>
-    <nav style={{ flex: 1, padding: "1rem 0" }}>
-      {TABS.map((t) => (
+    {TABS.map((t) => {
+      const act = tab === t.id;
+      return (
         <button
           key={t.id}
           onClick={() => onTab(t.id)}
           style={{
-            width: "100%",
-            padding: "12px 20px",
-            background: tab === t.id ? T.green50 : "none",
+            flex: 1,
+            background: "none",
             border: "none",
-            borderLeft: `4px solid ${tab === t.id ? T.green600 : "transparent"}`,
-            color: tab === t.id ? T.green700 : T.gray600,
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            gap: 12,
-            fontSize: 14,
+            justifyContent: "center",
+            gap: 4,
+            color: act ? T.green600 : T.gray400,
           }}
         >
-          <Icon
-            name={t.icon}
-            size={20}
-            color={tab === t.id ? T.green700 : T.gray600}
-          />
-          {t.label}
+          <Icon name={t.icon} size={20} color={act ? T.green600 : T.gray400} />
+          <span style={{ fontSize: 10, fontWeight: act ? 600 : 400 }}>
+            {t.label}
+          </span>
         </button>
-      ))}
-    </nav>
+      );
+    })}
+  </nav>
+);
+
+const Sidebar = ({ tab, onTab, onLogout, user }) => (
+  <aside className="app-sidebar">
+    <div style={{ padding: "1.5rem", borderBottom: `1px solid ${T.gray100}` }}>
+      <CustomLogo />
+    </div>
     <div
       style={{
-        padding: "1.25rem",
-        marginTop: "auto",
-        borderTop: `1px solid ${T.gray200}`,
+        padding: "1rem",
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
       }}
     >
+      {TABS.map((t) => {
+        const act = tab === t.id;
+        return (
+          <button
+            key={t.id}
+            onClick={() => onTab(t.id)}
+            style={{
+              width: "100%",
+              padding: "12px 16px",
+              borderRadius: 12,
+              border: "none",
+              background: act ? T.green50 : "none",
+              color: act ? T.green700 : T.gray700,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              fontSize: 14,
+              fontWeight: act ? 600 : 500,
+              textAlign: "left",
+            }}
+          >
+            <Icon
+              name={t.icon}
+              size={18}
+              color={act ? T.green700 : T.gray600}
+            />
+            <span>{t.label}</span>
+          </button>
+        );
+      })}
+    </div>
+    <div
+      style={{
+        padding: "1rem",
+        borderTop: `1px solid ${T.gray100}`,
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
+      <Avatar photoURL={user.photoURL} name={user.displayName} size={32} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            color: T.gray800,
+            textOverflow: "ellipsis",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {user.displayName}
+        </div>
+      </div>
       <button
         onClick={onLogout}
         style={{
-          width: "100%",
-          padding: "10px",
           background: "none",
           border: "none",
-          color: T.coral600,
+          padding: 6,
+          color: T.gray400,
+          borderRadius: 8,
           display: "flex",
-          alignItems: "center",
-          gap: 10,
-          fontSize: 13,
-          fontWeight: 600,
         }}
       >
-        <Icon name="signout" size={20} color={T.coral600} /> Cerrar Sesión
+        <Icon name="signout" size={18} />
       </button>
     </div>
-  </div>
+  </aside>
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// COMPONENTE PRINCIPAL (ROOT)
+// COMPONENTE PRINCIPAL (APP)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export default function App() {
   const [user, setUser] = useState(null);
-  const [records, setRecords] = useState([]);
-  const [dbReady, setDbReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("registro");
+  const [records, setRecords] = useState([]);
+  const [recordsLoading, setRecordsLoading] = useState(false);
   const [filter, setFilter] = useState("Todos");
   const [toast, setToast] = useState({
+    visible: false,
     message: "",
     type: "success",
-    visible: false,
   });
-
-  // Estados para la IA Predictiva
-  const [activePrediction, setActivePrediction] = useState(null);
-  const [dismissedToday, setDismissedToday] = useState(false);
-
-  const showToast = (message, type = "success") => {
-    setToast({ message, type, visible: true });
-    setTimeout(() => setToast((prev) => ({ ...prev, visible: false })), 3000);
-  };
+  const [prediction, setPrediction] = useState(null);
 
   useEffect(() => {
-    setAuthLoading(true);
-    getRedirectResult(auth)
-      .then(() => setAuthLoading(false))
-      .catch((err) => {
-        console.error(err);
-        setError("Error en la autenticación.");
-        setAuthLoading(false);
-      });
-
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
@@ -1331,119 +1323,118 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!user) {
-      setRecords([]);
-      setDbReady(false);
-      return;
-    }
-
-    const q = query(
+    if (!user) return;
+    setRecordsLoading(true);
+    const qRes = query(
       collection(db, "asistencias"),
-      where("usuario", "==", user.email),
       orderBy("timestamp", "desc"),
     );
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const docs = [];
-        snapshot.forEach((doc) => docs.push({ id: doc.id, ...doc.data() }));
-        setRecords(docs);
-        setDbReady(true);
+    const unsub = onSnapshot(
+      qRes,
+      (snap) => {
+        const list = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setRecords(list);
+        setRecordsLoading(false);
       },
-      (err) => console.error(err),
+      (err) => {
+        console.error(err);
+        setRecordsLoading(false);
+      },
     );
-
-    return () => unsubscribe();
+    return () => unsub();
   }, [user]);
 
-  // ── MOTOR PREDICTIVO: APRENDIZAJE AUTOMÁTICO DE RUTINAS ──────────────────
   useEffect(() => {
-    if (!dbReady || records.length < 3 || dismissedToday) return;
+    if (!user || records.length === 0) return;
 
-    const checkRoutineAndPredict = () => {
-      const hoyStr = todayStr();
-      const yaRegistroHoy = records.some((r) => r.fecha === hoyStr);
-      if (yaRegistroHoy) {
-        setActivePrediction(null);
-        return;
-      }
+    const userRecords = records.filter(
+      (r) => (r.nombre || r.usuario) === user.displayName,
+    );
+    if (userRecords.length < 3) return;
 
-      // 1. Filtrar solo entradas anteriores para calcular patrón
-      const entradasPasadas = records.filter(
-        (r) => r.tipo === "Entrada" && r.timestamp,
-      );
-      if (entradasPasadas.length < 2) return;
-
-      // 2. Extraer horas y minutos de registros previos
-      let sumaMinutos = 0;
-      entradasPasadas.slice(0, 5).forEach((r) => {
+    const conteos = {
+      Entrada: [],
+      Salida: [],
+      "Almuerzo Entrada": [],
+      "Almuerzo Salida": [],
+    };
+    userRecords.forEach((r) => {
+      if (conteos[r.tipo] && r.timestamp) {
         const date = r.timestamp.toDate
           ? r.timestamp.toDate()
           : new Date(r.timestamp);
-        sumaMinutos += date.getHours() * 60 + date.getMinutes();
-      });
-      const promedioMinutosTotales = Math.round(
-        sumaMinutos / Math.min(entradasPasadas.length, 5),
+        const mins = date.getHours() * 60 + date.getMinutes();
+        conteos[r.tipo].push(mins);
+      }
+    });
+
+    const ahora = new Date();
+    const minsAhora = ahora.getHours() * 60 + ahora.getMinutes();
+    const hoyStrLocal = todayStr();
+
+    const yaMarcadoHoy = (tipo) =>
+      records.some(
+        (r) =>
+          r.fecha === hoyStrLocal &&
+          (r.nombre || r.usuario) === user.displayName &&
+          r.tipo === tipo,
       );
 
-      const horaRutina = Math.floor(promedioMinutosTotales / 60);
-      const minutoRutina = promedioMinutosTotales % 60;
-
-      // 3. Comparar con hora real actual
-      const ahora = new Date();
-      const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
-
-      // Rango predictivo activo (20 minutos antes o 20 minutos después de su rutina habitual)
-      if (Math.abs(minutosAhora - promedioMinutosTotales) <= 20) {
-        setActivePrediction({
-          tipo: "Entrada",
-          horaSugerida: `${String(horaRutina).padStart(2, "0")}:${String(minutoRutina).padStart(2, "0")}`,
-        });
+    let sugerencia = null;
+    for (const [tipo, listaMins] of Object.entries(conteos)) {
+      if (listaMins.length >= 2 && !yaMarcadoHoy(tipo)) {
+        const promedioMins =
+          listaMins.reduce((a, b) => a + b, 0) / listaMins.length;
+        if (Math.abs(minsAhora - promedioMins) <= 45) {
+          const h = String(Math.floor(promedioMins / 60)).padStart(2, "0");
+          const m = String(Math.floor(promedioMins % 60)).padStart(2, "0");
+          sugerencia = { tipo, horaSugerida: `${h}:${m}` };
+          break;
+        }
       }
-    };
-
-    // Ejecutar chequeo cada 30 segundos de manera silenciosa
-    checkRoutineAndPredict();
-    const intervalId = setInterval(checkRoutineAndPredict, 30000);
-    return () => clearInterval(intervalId);
-  }, [dbReady, records, dismissedToday]);
+    }
+    setPrediction(sugerencia);
+  }, [records, user]);
 
   const handleLogin = async () => {
     setError(null);
     setAuthLoading(true);
     try {
-      await signInWithRedirect(auth, provider);
-    } catch {
-      setError("Error de redirección.");
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      console.error(err);
+      setError("Error al iniciar sesión con la ventana flotante.");
+    } finally {
       setAuthLoading(false);
     }
   };
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      showToast("Sesión cerrada");
-    } catch (err) {
-      console.error(err);
-    }
+    await signOut(auth);
+    setTab("registro");
+  };
+
+  const showToast = (message, type = "success") => {
+    setToast({ visible: true, message, type });
+    setTimeout(() => setToast((t) => ({ ...t, visible: false })), 3000);
   };
 
   const handleRegister = async ({ tipo, nota }) => {
     if (!user) return;
     try {
       await addDoc(collection(db, "asistencias"), {
-        usuario: user.email,
-        nombre: user.displayName || user.email,
         tipo,
-        nota: nota ? nota.trim() : "",
+        nota: nota.trim(),
         fecha: todayStr(),
+        usuario: user.email,
+        nombre: user.displayName,
         timestamp: serverTimestamp(),
       });
-      showToast(`¡${tipo} registrada!`);
-      setActivePrediction(null);
-    } catch {
-      showToast("Error al guardar", "error");
+      showToast(`¡${tipo} registrada con éxito!`);
+      setPrediction(null);
+    } catch (err) {
+      console.error(err);
+      showToast("Error al guardar en la base de datos", "error");
     }
   };
 
@@ -1455,76 +1446,98 @@ export default function App() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          background: T.green50,
         }}
       >
-        <GlobalStyle />
-        <Spinner size={40} />
+        <Spinner size={32} />
       </div>
     );
   }
 
-  if (!user)
+  if (!user) {
     return (
       <>
         <GlobalStyle />
         <LoginPage onLogin={handleLogin} loading={authLoading} error={error} />
       </>
     );
+  }
+
+  const userRecords = records.filter(
+    (r) => (r.nombre || r.usuario) === user.displayName,
+  );
+  const lastStatus = userRecords[0]?.tipo || "Sin registro";
 
   return (
     <>
       <GlobalStyle />
+      <div
+        className="app-shell"
+        style={{ display: "flex", flexDirection: "column" }}
+      >
+        <Sidebar tab={tab} onTab={setTab} onLogout={handleLogout} user={user} />
 
-      {/* Ventana de Sugerencia Predictiva Inteligente */}
-      <PredictiveNotification
-        prediction={activePrediction}
-        onAccept={() =>
-          handleRegister({
-            tipo: activePrediction.tipo,
-            nota: "Marcado por recomendación inteligente",
-          })
-        }
-        onCancel={() => {
-          setActivePrediction(null);
-          setDismissedToday(true);
-          showToast("Recordatorio descartado hoy", "info");
-        }}
-      />
-
-      <div className="app-shell">
-        <aside className="app-sidebar">
-          <SideNav
-            tab={tab}
-            onTab={setTab}
-            onLogout={handleLogout}
-            user={user}
-          />
-        </aside>
         <main className="app-main">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "1.25rem 1.25rem 0 1.25rem",
+            }}
+            className="bottom-nav"
+          >
+            <CustomLogo />
+            <button
+              onClick={handleLogout}
+              style={{
+                background: "none",
+                border: "none",
+                color: T.gray400,
+                display: "flex",
+                padding: 4,
+              }}
+            >
+              <Icon name="signout" size={20} />
+            </button>
+          </div>
+
           {tab === "registro" && (
             <RegisterForm
               onRegister={handleRegister}
-              lastStatus={records[0]?.tipo}
+              lastStatus={lastStatus}
               user={user}
             />
           )}
           {tab === "historial" && (
             <RecordsList
               records={records}
-              loading={!dbReady}
+              loading={recordsLoading}
               filter={filter}
               onFilter={setFilter}
             />
           )}
           {tab === "stats" && <StatsDashboard records={records} />}
         </main>
+
         <BottomNav tab={tab} onTab={setTab} />
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          visible={toast.visible}
+        />
+
+        <PredictiveNotification
+          prediction={prediction}
+          onAccept={() =>
+            handleRegister({
+              tipo: prediction.tipo,
+              nota: "Marcación predictiva inteligente",
+            })
+          }
+          onCancel={() => setPrediction(null)}
+        />
       </div>
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        visible={toast.visible}
-      />
     </>
   );
 }
